@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Interactive client-side image encryption and visual cryptography lab.">
+  <title>PixelVault — Interactive Image Security</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="PixelVault home"><span class="brand-mark">⬡</span><span>PixelVault</span><span class="brand-tag">LAB</span></a>
+    <div class="topbar-right"><span class="live-dot"></span><span>LOCAL PROCESSING</span><button id="themeToggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">☼</button></div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> CLIENT-SIDE IMAGE SECURITY</div>
+        <h1>Your image.<br><span>Your keys.</span><br>Your control.</h1>
+        <p class="hero-text">A hands-on security lab for encrypting images in your browser, transferring encrypted packages, and exploring visual cryptography.</p>
+        <div class="hero-actions"><button class="btn btn-primary" data-jump="encryptView">Start encrypting <span>↗</span></button><button class="btn btn-ghost" data-jump="visualView">Explore visual shares</button></div>
+        <div class="hero-stats"><div><strong>AES-256</strong><span>Authenticated encryption</span></div><div><strong>0 uploads</strong><span>Local browser processing</span></div><div><strong>2-of-2</strong><span>Visual share demo</span></div></div>
+      </div>
+      <div class="hero-art" aria-label="Illustration of an image being protected">
+        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+        <div class="art-card art-back"><div class="art-sun"></div><div class="art-mountain m1"></div><div class="art-mountain m2"></div><div class="art-water"></div></div>
+        <div class="art-lock"><span class="lock-shackle"></span><span class="lock-body">✦</span></div>
+        <div class="float-chip chip-top"><span class="chip-dot"></span> ENCRYPTED</div><div class="float-chip chip-bottom">⌁ &nbsp; PRIVATE BY DESIGN</div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="sidebar">
+        <p class="side-label">WORKSPACE</p>
+        <button class="side-link active" data-view="encryptView"><span class="nav-icon">▣</span><span><b>Encrypt & decrypt</b><small>AES-GCM workflow</small></span><span class="nav-arrow">›</span></button>
+        <button class="side-link" data-view="visualView"><span class="nav-icon">▦</span><span><b>Visual cryptography</b><small>Split into two shares</small></span><span class="nav-arrow">›</span></button>
+        <button class="side-link" data-view="guideView"><span class="nav-icon">⌘</span><span><b>Project guide</b><small>Architecture & security</small></span><span class="nav-arrow">›</span></button>
+        <div class="sidebar-note"><span class="note-icon">✳</span><b>Privacy note</b><p>Your image bytes stay in this browser in this demo. Only share encrypted packages, and send the password through a separate channel.</p></div>
+      </aside>
+
+      <div class="content">
+        <section id="encryptView" class="view active">
+          <div class="view-heading"><div><div class="eyebrow">01 / CRYPTOGRAPHY</div><h2>Encrypt an image</h2><p>Choose a file and protect it with a passphrase.</p></div><span class="status-pill"><i></i> AES-256-GCM</span></div>
+          <div class="card">
+            <div class="card-heading"><div><span class="step-number">1</span><div><h3>Select your image</h3><p>JPG, PNG, WEBP or another browser-readable image · up to 20 MB</p></div></div><span class="optional-label">REQUIRED</span></div>
+            <label class="dropzone" id="dropzone" for="imageInput">
+              <input id="imageInput" type="file" accept="image/*" hidden>
+              <div class="upload-icon">↑</div><strong>Drop your image here</strong><span>or <u>browse files</u></span><small>Images are read locally, never uploaded by this demo</small>
+            </label>
+            <div id="selectedPreview" class="file-preview hidden">
+              <img id="selectedImagePreview" alt="Selected image preview"><div class="file-info"><strong id="selectedName">image.png</strong><span id="selectedDetails">PNG · 1.2 MB</span><div class="mini-progress"><span></span></div></div><button id="removeImage" class="icon-btn" aria-label="Remove selected image">×</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-heading"><div><span class="step-number">2</span><div><h3>Set your passphrase</h3><p>A random salt and IV are generated for each encryption.</p></div></div><span class="optional-label">PRIVATE</span></div>
+            <label class="field-label" for="password">Encryption passphrase</label>
+            <div class="password-wrap"><input id="password" type="password" placeholder="At least 12 characters" autocomplete="new-password"><button id="togglePassword" class="show-password" type="button">Show</button></div>
+            <div class="strength-track"><span id="strengthBar"></span></div><div class="strength-row"><span id="strengthLabel">Passphrase strength</span><button id="generatePassword" class="text-button" type="button">Generate a passphrase ↗</button></div>
+            <label class="field-label" for="confirmPassword">Confirm passphrase</label><input id="confirmPassword" type="password" placeholder="Re-enter your passphrase" autocomplete="new-password">
+            <div class="security-callout"><span>ⓘ</span><p><b>Keep it safe.</b> If you lose the passphrase, the encrypted image cannot be recovered. Do not send it with the encrypted package.</p></div>
+            <button id="encryptBtn" class="btn btn-primary btn-wide"><span>Encrypt image</span><span>→</span></button>
+            <div id="encryptStatus" class="status-message" role="status" aria-live="polite"></div>
+            <div id="encryptProgress" class="progress-wrap hidden"><div class="progress-label"><span id="progressText">Preparing encryption…</span><span id="progressPercent">0%</span></div><div class="progress-track"><span id="progressFill"></span></div></div>
+          </div>
+
+          <div id="encryptedPanel" class="card result-card hidden">
+            <div class="result-header"><div class="result-check">✓</div><div><h3>Encrypted package is ready</h3><p>Your original image has been encrypted locally.</p></div><span class="status-pill">SUCCESS</span></div>
+            <div class="result-metrics"><div><small>ALGORITHM</small><b>AES-256-GCM</b></div><div><small>KEY DERIVATION</small><b>PBKDF2 · SHA-256</b></div><div><small>PACKAGE SIZE</small><b id="packageSize">—</b></div></div>
+            <button id="downloadPackage" class="btn btn-primary btn-wide">Download encrypted package <span>↓</span></button>
+            <p class="tiny-note">Transfer this .pixelvault.json file to the recipient. Share your passphrase separately.</p>
+          </div>
+
+          <div class="section-divider"><span>RECIPIENT WORKFLOW</span></div>
+          <div class="view-heading compact"><div><div class="eyebrow">02 / RECOVERY</div><h2>Decrypt a package</h2><p>Recover an image from a PixelVault encrypted file.</p></div></div>
+          <div class="card">
+            <label class="field-label" for="packageInput">Encrypted package</label>
+            <label class="package-drop" for="packageInput"><input id="packageInput" type="file" accept=".json,application/json" hidden><span class="package-icon">⇧</span><span><b id="packageLabel">Choose .pixelvault.json file</b><small id="packageDetails">Select the encrypted package you received</small></span><span class="browse-label">Browse</span></label>
+            <label class="field-label" for="decryptPassword">Passphrase</label><div class="password-wrap"><input id="decryptPassword" type="password" placeholder="Enter the sender's passphrase" autocomplete="current-password"><button id="toggleDecryptPassword" class="show-password" type="button">Show</button></div>
+            <button id="decryptBtn" class="btn btn-secondary btn-wide">Decrypt & recover <span>→</span></button><div id="decryptStatus" class="status-message" role="status" aria-live="polite"></div>
+            <div id="decryptedPanel" class="decrypted-panel hidden"><img id="decryptedPreview" alt="Recovered image preview"><div class="decrypted-info"><div><span class="success-text">✓ Authentication succeeded</span><h3 id="recoveredName">Recovered image</h3><p id="recoveredDetails"></p></div><button id="downloadRecovered" class="btn btn-primary">Download image ↓</button></div></div>
+          </div>
+        </section>
+
+        <section id="visualView" class="view">
+          <div class="view-heading"><div><div class="eyebrow">03 / VISUAL CRYPTOGRAPHY</div><h2>Split the image</h2><p>Turn an image into two shares and compare the combined result.</p></div><span class="status-pill violet">2-OUT-OF-2</span></div>
+          <div class="card">
+            <div class="card-heading"><div><span class="step-number violet-step">1</span><div><h3>Choose a source image</h3><p>For this demonstration, the image is converted to black and white.</p></div></div></div>
+            <label class="dropzone compact-drop" id="visualDropzone" for="visualInput"><input id="visualInput" type="file" accept="image/*" hidden><div class="upload-icon">▧</div><strong>Choose an image for visual shares</strong><span>Browse files to get started</span></label>
+            <div id="visualFileInfo" class="file-preview hidden"><img id="visualPreview" alt="Visual cryptography source preview"><div class="file-info"><strong id="visualName">source.png</strong><span id="visualDetails"></span></div><button id="removeVisual" class="icon-btn" aria-label="Remove source image">×</button></div>
+            <div class="slider-header"><label class="field-label" for="threshold">Black/white threshold</label><output id="thresholdOutput" for="threshold">128</output></div><input id="threshold" class="range" type="range" min="40" max="220" value="128"><div class="range-labels"><span>More black detail</span><span>More white detail</span></div>
+            <button id="makeShares" class="btn btn-primary btn-wide">Generate two shares <span>→</span></button><div id="visualStatus" class="status-message" role="status" aria-live="polite"></div>
+          </div>
+          <div id="sharesPanel" class="share-results hidden">
+            <div class="view-heading compact"><div><div class="eyebrow">OUTPUT / 01</div><h2>Your visual shares</h2><p>Keep both shares. One share alone should look like random noise.</p></div></div>
+            <div class="share-grid">
+              <article class="share-card"><div class="share-card-head"><div><span class="share-index">A</span><h3>Share A</h3></div><span class="muted-label">RANDOM PATTERN</span></div><canvas id="shareA"></canvas><button class="btn btn-small btn-secondary shareDownload" data-canvas="shareA" data-name="pixelvault-share-a.png">Download share A ↓</button></article>
+              <article class="share-card"><div class="share-card-head"><div><span class="share-index">B</span><h3>Share B</h3></div><span class="muted-label">RANDOM PATTERN</span></div><canvas id="shareB"></canvas><button class="btn btn-small btn-secondary shareDownload" data-canvas="shareB" data-name="pixelvault-share-b.png">Download share B ↓</button></article>
+              <article class="share-card combined-card"><div class="share-card-head"><div><span class="share-index combined-index">∩</span><h3>Combined result</h3></div><span class="muted-label">RECONSTRUCTED</span></div><canvas id="combinedShare"></canvas><button class="btn btn-small btn-primary shareDownload" data-canvas="combinedShare" data-name="pixelvault-combined.png">Download combined ↓</button></article>
+            </div>
+            <div class="security-callout"><span>ⓘ</span><p><b>Educational limitation.</b> This is a simplified, lossy black-and-white visual cryptography demonstration. It does not preserve the original color or detail and is not a replacement for AES-GCM.</p></div>
+          </div>
+        </section>
+
+        <section id="guideView" class="view">
+          <div class="view-heading"><div><div class="eyebrow">04 / DOCUMENTATION</div><h2>Project guide</h2><p>Architecture, cryptographic flow, and safe testing notes.</p></div></div>
+          <div class="card architecture-card">
+            <h3>System architecture</h3><p class="muted">All encryption and decryption in this starter happen on the client side.</p>
+            <div class="architecture-flow"><div class="flow-box"><span>01</span><b>Image input</b><small>Browser File API</small></div><div class="flow-arrow">→</div><div class="flow-box flow-highlight"><span>02</span><b>Key derivation</b><small>PBKDF2 · SHA-256</small></div><div class="flow-arrow">→</div><div class="flow-box"><span>03</span><b>Encryption</b><small>AES-256-GCM</small></div><div class="flow-arrow">→</div><div class="flow-box"><span>04</span><b>Package</b><small>JSON download</small></div></div>
+            <div class="architecture-note"><span>↳</span><p>The recipient selects the package, supplies the same passphrase, and the browser authenticates and decrypts the ciphertext.</p></div>
+          </div>
+          <div class="card guide-grid">
+            <article><span class="guide-icon">⌑</span><h3>Why AES-GCM?</h3><p>It encrypts data and detects tampering. If the package is modified or the password is wrong, decryption fails authentication.</p></article>
+            <article><span class="guide-icon">⌘</span><h3>Why PBKDF2?</h3><p>It derives an encryption key from a passphrase using a random salt and repeated SHA-256 operations, making password guessing more expensive.</p></article>
+            <article><span class="guide-icon">▦</span><h3>Why visual shares?</h3><p>A thresholded image is expanded into two shares. Combining them reveals a rough visual pattern; the technique is intentionally lossy.</p></article>
+            <article><span class="guide-icon">⚑</span><h3>Threat model</h3><p>Keep the passphrase private and separate from the package. A compromised website could serve altered JavaScript, so hosting alone does not guarantee end-to-end security.</p></article>
+          </div>
+          <div class="card">
+            <h3>Project checklist</h3><div class="checklist"><label><input type="checkbox"> Test with a small PNG and JPG</label><label><input type="checkbox"> Confirm the wrong password fails</label><label><input type="checkbox"> Confirm modified ciphertext fails</label><label><input type="checkbox"> Test visual share downloads</label><label><input type="checkbox"> Publish via HTTPS hosting</label><label><input type="checkbox"> Capture screenshots for project report</label></div>
+          </div>
+          <div class="warning-box"><b>Prototype, not audited security software.</b><p>Use non-sensitive images while testing. Do not use this student project to protect high-value or regulated information without a security review.</p></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <footer><div class="brand footer-brand"><span class="brand-mark">⬡</span><span>PixelVault</span></div><span>Interactive image security prototype · Built with browser-native APIs</span><span class="footer-secure">● CLIENT-SIDE DEMO</span></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
